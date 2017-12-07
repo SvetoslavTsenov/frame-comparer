@@ -9,14 +9,18 @@ export class VideoComparer {
     constructor(private _fullVideoName) { }
 
     public async compareImageFromVideo(expectedImageFullName: string, startRange, endRange, tollerance: number = 0.2) {
-        let result = false;
         return new Promise(async (accept, reject) => {
+           const filteredFrames =  this._frames.filter(f=>{
+                const number = f.replace(/\D/g,"");
+                if (number >= startRange && number <= endRange) {
+                    return true;
+                }
 
-
-            let result = false;
-            for (let index = startRange; index < endRange; index++) {
-                const element = this._frames[index];
-                const resilt = await this.compareImages(this._frames[index], expectedImageFullName);
+                return false;
+            })
+            for (let index = 0; index < filteredFrames.length; index++) {
+                console.log(filteredFrames[index]);
+                const result = await this.compareImages(filteredFrames[index], expectedImageFullName);
                 if (result) {
                     return accept(true);
                 }
