@@ -4,7 +4,7 @@
 ### Install ffmpeg 
 https://github.com/adaptlearning/adapt_authoring/wiki/Installing-FFmpeg
 
-## Instalation 
+## Installation 
 `$ npm i`
 
 
