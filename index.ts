@@ -6,10 +6,9 @@ const fullVideoName = "https://media.w3.org/2010/05/sintel/trailer.mp4";
 const videoComparer: VideoComparer = new VideoComparer(fullVideoName);
 
 async function test() {
-    videoComparer.processVideo(tempFolder).then(async () => {
-        let result = await videoComparer.compareImageFromVideo(resolve(storage, "test55.png"));
-        console.log(result);
-    })
+    await videoComparer.processVideo(tempFolder);
+    let result = await videoComparer.compareImageFromVideo(resolve(storage, "test55.png"), 50, 55);
+    return result;
 }
 
 test();

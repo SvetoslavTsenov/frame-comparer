@@ -5,19 +5,24 @@ import { statSync, existsSync, readdirSync, unlinkSync, rmdirSync, mkdirSync } f
 
 export class VideoComparer {
     private _frameStorageFullName: string;
+    private _frames: Array<string>;
     constructor(private _fullVideoName) { }
 
-    public async compareImageFromVideo(expectedImageFullName: string, tollerance: number = 0.2) {
+    public async compareImageFromVideo(expectedImageFullName: string, startRange, endRange, tollerance: number = 0.2) {
         let result = false;
         return new Promise(async (accept, reject) => {
-            const matches = readdirSync(this._frameStorageFullName)
-                .filter(async (file) => {
-                    file = resolve(this._frameStorageFullName, file);
-                    console.log(file);
-                    return await this.compareImages(expectedImageFullName, file, tollerance);
-                });
 
-            accept(matches);
+
+            let result = false;
+            for (let index = startRange; index < endRange; index++) {
+                const element = this._frames[index];
+                const resilt = await this.compareImages(this._frames[index], expectedImageFullName);
+                if (result) {
+                    return accept(true);
+                }
+            }
+
+            return accept(false);
         });
     }
 
@@ -26,16 +31,24 @@ export class VideoComparer {
         this.cleanDir(this._frameStorageFullName);
         mkdirSync(this._frameStorageFullName);
         let lastFrameEnqueued = 0;
+        const sorage = this._frameStorageFullName;
+        const that = this;
         const imageName = resolve(this._frameStorageFullName, "test")
-        return new Promise<any>((resolve, reject) => {
+        return new Promise<any>((res, reject) => {
             ffmpeg(this._fullVideoName)
                 .on('error', function (err) {
                     console.log('An error occurred: ' + err.message);
                     reject();
                 })
                 .on('end', function () {
+                    that._frames = new Array();
                     console.log('Processing finished !');
-                    resolve();
+                    readdirSync(sorage)
+                        .forEach((file) => {
+                            file = resolve(sorage, file);
+                            that._frames.push(file);
+                        });
+                    res();
                 })
                 .on('progress', function (progress) {
                     lastFrameEnqueued = progress.frames - 1;
