@@ -1,0 +1,18 @@
+{
+  "name": "video-processing",
+  "version": "1.0.0",
+  "description": "Library to process video to frames ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SvetoslavTsenov",
+  "license": "ISC",
+  "dependencies": {
+    "@types/fluent-ffmpeg": "^2.1.5",
+    "blink-diff": "^1.0.13",
+    "ffmpeg": "0.0.4",
+    "fluent-ffmpeg": "^2.1.2",
+    "typescript": "^2.6.2"
+  }
+}
