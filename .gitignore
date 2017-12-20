@@ -2,3 +2,4 @@ node_modules
 temp
 *.js
 *.map
+package-lock.json
