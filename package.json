@@ -1,5 +1,5 @@
 {
-  "name": "video-processing",
+  "name": "frame-comparer",
   "version": "1.0.0",
   "description": "Library to process video to frames ",
   "main": "index.js",
@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "SvetoslavTsenov",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@types/fluent-ffmpeg": "^2.1.5",
     "blink-diff": "^1.0.13",
