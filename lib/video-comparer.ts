@@ -6,12 +6,11 @@ import { statSync, existsSync, readdirSync, unlinkSync, rmdirSync, mkdirSync } f
 export class VideoComparer {
     private _frameStorageFullName: string;
     private _frames: Array<string>;
-    constructor(private _fullVideoName) { }
 
     public async compareImageFromVideo(expectedImageFullName: string, startRange, endRange, tollerance: number = 0.2) {
         return new Promise(async (accept, reject) => {
-           const filteredFrames =  this._frames.filter(f=>{
-                const number = f.replace(/\D/g,"");
+            const filteredFrames = this._frames.filter(f => {
+                const number = f.replace(/\D/g, "");
                 if (number >= startRange && number <= endRange) {
                     return true;
                 }
@@ -30,16 +29,16 @@ export class VideoComparer {
         });
     }
 
-    public processVideo(frameStorageFullName) {
+    public processVideo(fullVideoName: string, frameStorageFullName = "tempFramesFolder", framesGeneralName = "frame") {
         this._frameStorageFullName = frameStorageFullName;
         this.cleanDir(this._frameStorageFullName);
         mkdirSync(this._frameStorageFullName);
         let lastFrameEnqueued = 0;
         const sorage = this._frameStorageFullName;
         const that = this;
-        const imageName = resolve(this._frameStorageFullName, "test")
+        const imageName = resolve(this._frameStorageFullName, framesGeneralName)
         return new Promise<any>((res, reject) => {
-            ffmpeg(this._fullVideoName)
+            ffmpeg(fullVideoName)
                 .on('error', function (err) {
                     console.log('An error occurred: ' + err.message);
                     reject();
@@ -52,6 +51,7 @@ export class VideoComparer {
                             file = resolve(sorage, file);
                             that._frames.push(file);
                         });
+                        
                     res();
                 })
                 .on('progress', function (progress) {

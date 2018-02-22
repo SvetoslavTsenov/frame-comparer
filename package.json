@@ -4,7 +4,9 @@
   "description": "Library to process video to frames ",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "tsc --watch"
   },
   "author": "SvetoslavTsenov",
   "license": "MIT",
@@ -14,5 +16,8 @@
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
     "typescript": "^2.6.2"
+  },
+  "bin": {
+    "compare-frames": "./bin/frame-comparer"
   }
 }
