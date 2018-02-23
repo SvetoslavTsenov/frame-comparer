@@ -1,8 +1,12 @@
-import { VideoComparer } from "./lib/video-comparer";
+import { FrameComparer } from "./lib/frame-comparer";
 import { resolve } from "path";
 
-export { VideoComparer } from "./lib/video-comparer";
+export { FrameComparer } from "./lib/frame-comparer";
 
+
+export function createFrameComparer(){
+    return new FrameComparer();
+}
 
 // const storage = resolve("./");
 // const tempFolder = `${storage}/temp`;
