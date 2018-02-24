@@ -7,9 +7,9 @@ export class FrameComparer {
     private _frameStorageFullName: string;
     private _frames: Array<string>;
 
-    public async compareImageFromVideo(expectedImageFullName: string, startRange, endRange, tollerance: number = 0.2) {
+    public async compareImageFromVideo(expectedImageFullName: string, logStorage: string, startRange, endRange, tollerance: number = 0.2) {
         return new Promise(async (accept, reject) => {
-            endRange = endRange < this._frames.length ? endRange : this._frames.length - 1;
+            endRange = endRange < this._frames.length ? endRange : this._frames.length;
             const filteredFrames = this._frames.filter(f => {
                 const number = f.replace(/\D/g, "");
                 if (number >= startRange && number <= endRange) {
@@ -20,7 +20,8 @@ export class FrameComparer {
             })
             for (let index = 0; index < filteredFrames.length; index++) {
                 console.log(filteredFrames[index]);
-                const result = await this.compareImages(filteredFrames[index], expectedImageFullName);
+                const diffImage = resolve(logStorage, basename(filteredFrames[index].replace(".png", "_diff.png")));
+                const result = await this.compareImages(filteredFrames[index], expectedImageFullName, diffImage, tollerance);
                 if (result) {
                     return accept(true);
                 }
@@ -64,12 +65,13 @@ export class FrameComparer {
                 .save(`${imageName}%d.png`);
         });
     }
-    
+
     //blinkDiff.THRESHOLD_PERCENT
-    private async compareImages(actual: string, expected: string, valueThreshold: number = 0.01, typeThreshold = blinkDiff.THRESHOLD_PERCENT) {
+    private async compareImages(actual: string, expected: string, output: string, valueThreshold: number = 0.01, typeThreshold = blinkDiff.THRESHOLD_PERCENT) {
         const diff = new blinkDiff({
             imageAPath: actual,
             imageBPath: expected,
+            imageOutputPath: output,
             imageOutputLimit: blinkDiff.OUTPUT_ALL,
             thresholdType: typeThreshold,
             threshold: valueThreshold,
