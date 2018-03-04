@@ -1,4 +1,4 @@
-# Compare image/s from a video
+# Process video to frames and compare image to a frame
 
 ## Requirments
 ### Install ffmpeg 

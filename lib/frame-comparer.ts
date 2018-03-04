@@ -8,6 +8,9 @@ export class FrameComparer {
     private _frames: Array<string>;
 
     public async compareImageFromVideo(expectedImageFullName: string, logStorage: string, startRange, endRange, tollerance: number = 0.2) {
+        if (!existsSync(expectedImageFullName)) {
+            throw new Error(`${expectedImageFullName} is not available!!!`);
+        }
         return new Promise(async (accept, reject) => {
             endRange = endRange < this._frames.length ? endRange : this._frames.length;
             const filteredFrames = this._frames.filter(f => {
