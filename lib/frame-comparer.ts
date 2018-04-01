@@ -1,17 +1,18 @@
 import * as ffmpeg from 'fluent-ffmpeg';
 import * as blinkDiff from "blink-diff";
-import { resolve, basename } from 'path';
-import { statSync, existsSync, readdirSync, unlinkSync, rmdirSync, mkdirSync } from 'fs';
+import { resolve, basename, extname } from 'path';
+import { statSync, existsSync, readdirSync, unlinkSync, rmdirSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
+import { IRectangle } from './interfaces/rectangle';
 
 export class FrameComparer {
     private _frameStorageFullName: string;
     private _frames: Array<string>;
 
-    public async compareImageFromVideo(expectedImageFullName: string, logStorage: string, startRange, endRange, tollerance: number = 0.2) {
-        if (!existsSync(expectedImageFullName)) {
+    public async compareImageFromVideo(expectedImageFullName: string, logStorage: string, startRange, endRange, tollerance: number = 0.2, saveActualImageAsExpected: boolean = true, cropImageRect: IRectangle = undefined, verbose = true): Promise<boolean> {
+        if (!saveActualImageAsExpected && !existsSync(expectedImageFullName)) {
             throw new Error(`${expectedImageFullName} is not available!!!`);
         }
-        return new Promise(async (accept, reject) => {
+        return new Promise<boolean>(async (accept, reject) => {
             endRange = endRange < this._frames.length ? endRange : this._frames.length;
             const filteredFrames = this._frames.filter(f => {
                 const number = f.replace(/\D/g, "");
@@ -20,13 +21,30 @@ export class FrameComparer {
                 }
 
                 return false;
-            })
+            });
+
+            let isExcpectedImageAvailable = true;
             for (let index = 0; index < filteredFrames.length; index++) {
-                console.log(filteredFrames[index]);
-                const diffImage = resolve(logStorage, basename(filteredFrames[index].replace(".png", "_diff.png")));
-                const result = await this.compareImages(filteredFrames[index], expectedImageFullName, diffImage, tollerance);
-                if (result) {
-                    return accept(true);
+                if (verbose) {
+                    console.log(filteredFrames[index]);
+                }
+
+                isExcpectedImageAvailable = existsSync(expectedImageFullName);
+                const extn = extname(filteredFrames[index]);
+                const getFrameIndex = (fileName, extn) => /\d+/.exec(new RegExp(`\\d+` + extn).exec(fileName)[0])[0];
+                const desiredFrame = getFrameIndex(expectedImageFullName, extn);
+                const currentFrame = getFrameIndex(filteredFrames[index], extn);
+                if (saveActualImageAsExpected && !isExcpectedImageAvailable && desiredFrame === currentFrame) {
+                    writeFileSync(expectedImageFullName, readFileSync(filteredFrames[index]));
+                    isExcpectedImageAvailable = true;
+                }
+
+                if (isExcpectedImageAvailable) {
+                    const diffImage = resolve(logStorage, basename(filteredFrames[index].replace(extn, `_diff${extn}`)));
+                    const result = await this.compareImages(filteredFrames[index], expectedImageFullName, diffImage, tollerance, blinkDiff.THRESHOLD_PERCENT, cropImageRect, verbose);
+                    if (result) {
+                        return accept(true);
+                    }
                 }
             }
 
@@ -69,11 +87,12 @@ export class FrameComparer {
         });
     }
 
-    //blinkDiff.THRESHOLD_PERCENT
-    private async compareImages(actual: string, expected: string, output: string, valueThreshold: number = 0.01, typeThreshold = blinkDiff.THRESHOLD_PERCENT) {
+    private async compareImages(actual: string, expected: string, output: string, valueThreshold: number = 0.01, typeThreshold, cropImageRect: IRectangle, verbose = true) {
         const diff = new blinkDiff({
             imageAPath: actual,
+            cropImageA: cropImageRect,
             imageBPath: expected,
+            cropImageB: cropImageRect,
             imageOutputPath: output,
             imageOutputLimit: blinkDiff.OUTPUT_ALL,
             thresholdType: typeThreshold,
@@ -81,10 +100,10 @@ export class FrameComparer {
             delta: 20,
         });
 
-        return await this.runDiff(diff);
+        return await this.runDiff(diff, verbose);
     }
 
-    private runDiff(diffOptions: blinkDiff) {
+    private runDiff(diffOptions: blinkDiff, verbose) {
         return new Promise<boolean>((resolve, reject) => {
             diffOptions.run(function (error, result) {
                 if (error) {
@@ -93,14 +112,18 @@ export class FrameComparer {
                     let message;
                     let resultCode = diffOptions.hasPassed(result.code);
                     if (resultCode) {
-                        message = "Screen compare passed!";
-                        console.log(message);
-                        console.log('Found ' + result.differences + ' differences.');
+                        if (verbose) {
+                            message = "Screen compare passed!";
+                            console.log(message);
+                            console.log('Found ' + result.differences + ' differences.');
+                        }
                         return resolve(true);
                     } else {
-                        message = "Screen compare failed!";
-                        console.log(message);
-                        console.log('Found ' + result.differences + ' differences.');
+                        if (verbose) {
+                            message = "Screen compare failed!";
+                            console.log(message);
+                            console.log('Found ' + result.differences + ' differences.');
+                        }
                         return resolve(false);
                     }
                 }
