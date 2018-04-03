@@ -8,7 +8,7 @@ export class FrameComparer {
     private _frameStorageFullName: string;
     private _frames: Array<string>;
 
-    public async compareImageFromVideo(expectedImageFullName: string, logStorage: string, startRange, endRange, tollerance: number = 0.2, saveActualImageAsExpected: boolean = true, cropImageRect: IRectangle = undefined, verbose = true): Promise<boolean> {
+    public async compareImageFromVideo(expectedImageFullName: string, logStorage: string, startRange, endRange, tollerance: number = 0.2, saveActualImageAsExpected: boolean = true, shouldLogImageResults: boolean = false, cropImageRect: IRectangle = undefined, verbose = true): Promise<boolean> {
         if (!saveActualImageAsExpected && !existsSync(expectedImageFullName)) {
             throw new Error(`${expectedImageFullName} is not available!!!`);
         }
@@ -40,7 +40,7 @@ export class FrameComparer {
                 }
 
                 if (isExcpectedImageAvailable) {
-                    const diffImage = resolve(logStorage, basename(filteredFrames[index].replace(extn, `_diff${extn}`)));
+                    const diffImage = (!shouldLogImageResults || !logStorage) ? undefined : resolve(logStorage, basename(filteredFrames[index].replace(extn, `_diff${extn}`)));
                     const result = await this.compareImages(filteredFrames[index], expectedImageFullName, diffImage, tollerance, blinkDiff.THRESHOLD_PERCENT, cropImageRect, verbose);
                     if (result) {
                         return accept(true);
