@@ -11,11 +11,13 @@
   "author": "SvetoslavTsenov",
   "license": "MIT",
   "dependencies": {
-    "@types/fluent-ffmpeg": "^2.1.5",
     "blink-diff": "^1.0.13",
     "ffmpeg": "0.0.4",
-    "fluent-ffmpeg": "^2.1.2",
-    "typescript": "^2.6.2"
+    "fluent-ffmpeg": "^2.1.2"
+  },
+  "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.8",
+    "typescript": "~3.0.0"
   },
   "bin": {
     "compare-frames": "./bin/frame-comparer"
